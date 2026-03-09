@@ -8,34 +8,30 @@ DATA_FILE = "last_news.json"
 
 
 def get_latest_news():
-    """Fetch the latest news from website"""
 
     r = requests.get(URL, timeout=20)
     r.encoding = "utf-8"
 
     soup = BeautifulSoup(r.text, "html.parser")
 
-    links = soup.find_all("a")
+    # 精确抓取公告列表
+    news_links = soup.select(".list .item h3 a")
 
-    for a in links:
+    if not news_links:
+        raise Exception("No news found")
 
-        title = a.get_text(strip=True)
-        link = a.get("href")
+    first = news_links[0]
 
-        if not title or not link:
-            continue
+    title = first.get_text(strip=True)
+    link = first.get("href")
 
-        if ".htm" in link and len(title) > 5:
+    if not link.startswith("http"):
+        link = "https://law.gzu.edu.cn" + link
 
-            if not link.startswith("http"):
-                link = "https://law.gzu.edu.cn" + link
-
-            return {
-                "title": title,
-                "link": link
-            }
-
-    raise Exception("No news found")
+    return {
+        "title": title,
+        "link": link
+    }
 
 
 def load_last():
